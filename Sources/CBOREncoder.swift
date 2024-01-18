@@ -289,6 +289,11 @@ extension CBOR {
             }
 
             return res
+        case .taggedAsFullDate:
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = .withFullDate
+            let string = formatter.string(from: date)            
+            return encodeTagged(tag: .init(rawValue: 1004), value: string)
         }
     }
     #endif

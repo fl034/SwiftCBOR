@@ -166,11 +166,18 @@ public class CBORDecoder {
         // tagged values
         case 0xc0...0xdb:
             let tag = try readVarUInt(b, base: 0xc0)
-            guard let item = try decodeItem() else { throw CBORError.unfinishedSequence }
-            #if canImport(Foundation)
+            print("got tag \(tag), checking item...")
+            guard let item = try decodeItem() else {
+                print("got tag \(tag), unfinished sequence")
+                throw CBORError.unfinishedSequence
+            }
+            print("got tag \(tag) with item \(item)")
+            #if canImport(Foundation)            
             if tag == 1 {
                 let date = try getDateFromTimestamp(item)
                 return CBOR.date(date)
+            } else if tag == 1004 {
+                return CBOR.date(try getDateFromFullDateString(item))
             }
             #endif
             return CBOR.tagged(CBOR.Tag(rawValue: tag), item)
@@ -205,6 +212,20 @@ func getDateFromTimestamp(_ item: CBOR) throws -> Date {
         return Date(timeIntervalSince1970: TimeInterval(f))
     case .unsignedInt(let u):
         return Date(timeIntervalSince1970: TimeInterval(u))
+    default:
+        throw CBORError.wrongTypeInsideSequence
+    }
+}
+
+func getDateFromFullDateString(_ item: CBOR) throws -> Date {
+    switch item {
+    case .utf8String(let string):
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withFullDate
+        guard let date = formatter.date(from: string) else {
+            throw CBORError.wrongTypeInsideSequence
+        }
+        return date
     default:
         throw CBORError.wrongTypeInsideSequence
     }

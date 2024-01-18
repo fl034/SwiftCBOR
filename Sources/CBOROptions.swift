@@ -31,6 +31,7 @@ public struct CBOROptions {
 
 public enum DateStrategy {
     case taggedAsEpochTimestamp
+    case taggedAsFullDate
     case annotatedMap
 }
 
