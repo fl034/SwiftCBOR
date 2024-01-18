@@ -224,8 +224,10 @@ extension _CBORDecoder.UnkeyedContainer {
         case 0xc1:
             length = try getLengthOfItem(format: try self.peekByte(), startIndex: startIndex.advanced(by: 1)) + 1
         case 0xd9:
-            length = try getLengthOfItem(format: try self.peek(3).last!, startIndex: startIndex.advanced(by: 1)) + 3
-            print("d9 length : \(length)")
+            guard let thirdPeekedByte = try self.peek(3).last else {
+                throw DecodingError.dataCorruptedError(in: self, debugDescription: "Couldn't detect length of content with tag.")
+            }
+            length = try getLengthOfItem(format: thirdPeekedByte, startIndex: startIndex.advanced(by: 1)) + 3
         case 0xc2...0xdb:
             // FIXME
             throw DecodingError.dataCorruptedError(in: self, debugDescription: "Handling tags (other than epoch-based date/time) is not supported yet")
