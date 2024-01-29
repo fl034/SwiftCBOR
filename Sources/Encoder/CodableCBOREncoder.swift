@@ -45,6 +45,10 @@ public class CodableCBOREncoder {
             return Data(CBOR.encodeDate(dateVal, options: self.options.toCBOROptions()))
         } else if let dataVal = value as? Data {
             return Data(CBOR.encodeData(dataVal, options: self.options.toCBOROptions()))
+        } else if let tagged = value as? TaggedUtf8String {
+            return Data(CBOR.encodeTagged(tag: .init(rawValue: tagged.tag), value: tagged.value, options: self.options.toCBOROptions()))
+        } else if let tagged = value as? TaggedByteString {
+            return Data(CBOR.encodeTagged(tag: .init(rawValue: tagged.tag), value: CBOR.byteString(tagged.value), options: self.options.toCBOROptions()))
         }
         if options.forbidNonStringMapKeys {
             if let dict = value as? Dictionary<AnyHashable, Any?> {
