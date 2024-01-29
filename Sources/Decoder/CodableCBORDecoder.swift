@@ -54,7 +54,7 @@ final public class CodableCBORDecoder {
         // Tagged
         if let cbor = try? CBORDecoder(input: [UInt8](data), options: self.options.toCBOROptions()).decodeItem(),
            case let .tagged(tag, innerCbor) = cbor {
-            switch cbor {
+            switch innerCbor {
             case .unsignedInt(let uInt64):
                 break
             case .negativeInt(let uInt64):

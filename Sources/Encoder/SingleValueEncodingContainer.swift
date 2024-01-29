@@ -144,6 +144,20 @@ extension _CBOREncoder.SingleValueContainer: SingleValueEncodingContainer {
 
         self.storage.append(contentsOf: CBOR.encodeData(value, options: self.options.toCBOROptions()))
     }
+    
+    func encode(_ value: TaggedUtf8String) throws {
+        try checkCanEncode(value: value)
+        defer { self.canEncodeNewValue = false }
+
+        self.storage.append(contentsOf: CBOR.encodeTagged(tag: .init(rawValue: value.tag), value: value.value, options: self.options.toCBOROptions()))
+    }
+    
+    func encode(_ value: TaggedByteString) throws {
+        try checkCanEncode(value: value)
+        defer { self.canEncodeNewValue = false }
+
+        self.storage.append(contentsOf: CBOR.encodeTagged(tag: .init(rawValue: value.tag), value: CBOR.byteString(value.value), options: self.options.toCBOROptions()))
+    }
 
     func encode<T: Encodable>(_ value: T) throws {
         try checkCanEncode(value: value)
@@ -154,6 +168,10 @@ extension _CBOREncoder.SingleValueContainer: SingleValueEncodingContainer {
             try self.encode(data)
         case let date as Date:
             try self.encode(date)
+        case let tagged as TaggedUtf8String:
+            try self.encode(tagged)
+        case let tagged as TaggedByteString:
+            try self.encode(tagged)
         default:
             let encoder = _CBOREncoder(options: self.options)
             try value.encode(to: encoder)
