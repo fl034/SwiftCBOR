@@ -50,6 +50,52 @@ final public class CodableCBORDecoder {
             }
             return Data(data) as! T
         }
+        
+        // Tagged
+        if let cbor = try? CBORDecoder(input: [UInt8](data), options: self.options.toCBOROptions()).decodeItem(),
+           case let .tagged(tag, innerCbor) = cbor {
+            switch cbor {
+            case .unsignedInt(let uInt64):
+                break
+            case .negativeInt(let uInt64):
+                break
+            case .byteString(let array):
+                return try unwrap(
+                    TaggedByteString(tag: tag.rawValue, value: array) as? T,
+                    orThrow: DecodingError.typeMismatch(type, .init(codingPath: [],  debugDescription: "Wrong type"))
+                )
+            case .utf8String(let string):
+                return try unwrap(
+                    TaggedUtf8String(tag: tag.rawValue, value: string) as? T,
+                    orThrow: DecodingError.typeMismatch(type, .init(codingPath: [],  debugDescription: "Wrong type"))
+                )
+            case .array(let array):
+                break
+            case .map(let dictionary):
+                break
+            case.tagged(let tag, let cBOR):
+                break
+            case .simple(let uInt8):
+                break
+            case .boolean(let bool):
+                break
+            case .null:
+                break
+            case .undefined:
+                break
+            case .half(let float32):
+                break
+            case .float(let float32):
+                break
+            case .double(let float64):
+                break
+            case .break:
+                break
+            case .date(let date):
+                break
+            }
+        }
+        
         return try T(from: decoder)
     }
 
@@ -206,4 +252,11 @@ func typeDescriptionFromByte(_ byte: UInt8) -> String? {
     default:
         return nil
     }
+}
+
+private func unwrap<T>(_ optional: T?, orThrow error: Error) throws -> T {
+    if let optional {
+        return optional
+    }
+    throw error
 }
